@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PlusCircle, Calendar, DollarSign, TrendingUp, AlertCircle } from 'lucide-react';
 
 const GoalInput = ({ onAddGoal }) => {
+    // Helper to get local date in YYYY-MM-DD format (fixes UTC issue)
+    const getTodayString = () => {
+        const d = new Date();
+        return d.toLocaleDateString('en-CA');
+    };
+
     const [goal, setGoal] = useState({
         name: '',
-        startDate: new Date().toISOString().split('T')[0],
+        startDate: getTodayString(),
         targetDate: '',
         amountNeededToday: '',
         inflation: 6,
@@ -13,6 +19,23 @@ const GoalInput = ({ onAddGoal }) => {
         priority: 3,
         expectedReturn: 12
     });
+
+    // Fetch precise India time on mount
+    useEffect(() => {
+        const fetchIndiaTime = async () => {
+            try {
+                const res = await fetch('http://worldtimeapi.org/api/timezone/Asia/Kolkata');
+                const data = await res.json();
+                if (data.datetime) {
+                    const apiDate = data.datetime.split('T')[0];
+                    setGoal(prev => ({ ...prev, startDate: apiDate }));
+                }
+            } catch (e) {
+                console.log("Using system date:", getTodayString());
+            }
+        };
+        fetchIndiaTime();
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -41,7 +64,7 @@ const GoalInput = ({ onAddGoal }) => {
             ...prev,
             name: '',
             amountNeededToday: '',
-            startDate: new Date().toISOString().split('T')[0] // Reset to today
+            startDate: getTodayString() // Reset to today
         }));
     };
 

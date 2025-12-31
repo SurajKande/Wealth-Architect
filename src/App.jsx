@@ -185,8 +185,8 @@ function App() {
                               key={index}
                               onClick={() => handleScenarioSelect(goal.id, scenario.type)}
                               className={`p-4 rounded-xl border cursor-pointer transition-all ${isActive
-                                  ? 'bg-white/10 border-white/30 backdrop-blur-sm shadow-xl scale-[1.02] ring-1 ring-white/20' // Selected Style: Transparent Gray + Scale
-                                  : 'bg-black/20 border-white/5 hover:bg-white/5 opacity-70 hover:opacity-100' // Inactive
+                                ? 'bg-white/10 border-white/30 backdrop-blur-sm shadow-xl scale-[1.02] ring-1 ring-white/20' // Selected Style: Transparent Gray + Scale
+                                : 'bg-black/20 border-white/5 hover:bg-white/5 opacity-70 hover:opacity-100' // Inactive
                                 }`}
                             >
                               <div className="flex justify-between items-start mb-2">
@@ -234,7 +234,11 @@ function App() {
             )}
           </div>
         </div>
-      </div >
+      </div>
+
+      <div className="mt-12 text-center text-xs text-gray-600 pb-4">
+        v1.4
+      </div>
     </div >
   );
 }
