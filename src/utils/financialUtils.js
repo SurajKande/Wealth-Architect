@@ -166,3 +166,24 @@ export const fetchHistoricalCAGR = async (schemeCode, years = 3) => {
         return null;
     }
 };
+
+/**
+ * Smartly formats currency numbers into K (Thousands), L (Lakhs), or Cr (Crores)
+ * @param {number} value - The amount to format
+ * @returns {string} - Formatted string
+ */
+export const formatCurrency = (value) => {
+    if (value === undefined || value === null) return "₹ 0";
+    const absValue = Math.abs(value);
+
+    if (absValue >= 10000000) { // >= 1 Crore
+        return `₹ ${(value / 10000000).toFixed(2)} Cr`;
+    } else if (absValue >= 100000) { // >= 1 Lakh
+        return `₹ ${(value / 100000).toFixed(2)} L`;
+    } else if (absValue >= 1000) { // >= 1 Thousand
+        return `₹ ${(value / 1000).toFixed(2)} K`;
+    } else {
+        return `₹ ${value.toFixed(0)}`;
+    }
+};
+

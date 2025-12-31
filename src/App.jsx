@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import GoalInput from './components/GoalInput';
 import { useFinancialAdvisor } from './hooks/useFinancialAdvisor';
+import { formatCurrency } from './utils/financialUtils';
 import { TrendingUp, ShieldCheck, AlertTriangle, IndianRupee } from 'lucide-react';
 
 function App() {

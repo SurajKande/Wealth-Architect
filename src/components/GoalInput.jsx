@@ -106,7 +106,7 @@ const GoalInput = ({ onAddGoal }) => {
                 </div>
 
                 <div>
-                    <label className="block text-xs font-medium text-gray-300 mb-1">Existing Monthly SIP (₹)</label>
+                    <label className="block text-xs font-medium text-gray-300 mb-1">Planned Monthly Investment (₹)</label>
                     <input
                         type="number"
                         name="monthlyInvestment"
