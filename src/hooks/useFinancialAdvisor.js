@@ -146,7 +146,8 @@ export const useFinancialAdvisor = (goals) => {
                     projectedCorpus: s.projectedCorpus,
                     shortfall: s.shortfall,
                     requiredExtraSip: s.requiredSip,
-                    confidenceScore: s.confidence
+                    confidenceScore: s.confidence,
+                    recommendedFunds: s.category.recommendedFunds || [] // Pass specific funds
                 }));
 
             // Construct Final Insight Object
@@ -169,7 +170,8 @@ export const useFinancialAdvisor = (goals) => {
                     projectedCorpus: primaryRec.projectedCorpus,
                     shortfall: primaryRec.shortfall,
                     requiredExtraSip: primaryRec.requiredSip,
-                    confidenceScore: primaryRec.confidence
+                    confidenceScore: primaryRec.confidence,
+                    recommendedFunds: primaryRec.category.recommendedFunds || [] // Pass specific funds
                 },
 
                 alternativeScenarios, // New: Exposed for UI

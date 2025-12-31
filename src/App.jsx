@@ -167,6 +167,34 @@ function App() {
                           </div>
                         )}
                       </div>
+
+                      {/* Detailed Fund Recommendations (v2.0) */}
+                      {rec.recommendedFunds && rec.recommendedFunds.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-white/10">
+                          <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase mb-2">
+                            <TrendingUp size={12} /> Top Rated Funds for this Strategy
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {rec.recommendedFunds.map((fund, i) => (
+                              <div key={i} className="bg-black/40 border border-white/5 p-3 rounded-lg flex justify-between items-center hover:bg-white/5 transition">
+                                <div>
+                                  <div className="text-white text-sm font-medium">{fund.name}</div>
+                                  <div className="text-[10px] text-gray-500 font-mono mt-1">ISIN: {fund.isin}</div>
+                                </div>
+                                <a
+                                  href={`https://www.mfapi.in/mf/${fund.schemeCode}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded hover:bg-emerald-500/30"
+                                >
+                                  Track
+                                </a>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                     </div>
 
                     {/* Alternative Strategies */}

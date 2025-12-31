@@ -33,7 +33,11 @@ The primary objective of Wealth Architect is to give users clarity on their fina
 
 ## 📜 Version History & Changelog
 
-### v1.4: UX & Interactivity Polish (Current)
+### v2.0: The Wealth Platform (Current)
+*   **Feature**: **Specific Fund Recommendations**. The engine now suggests real-world funds (e.g., *Parag Parikh Flexi Cap*, *SBI Liquid Fund*) with direct ISIN tracking links, instead of just generic categories.
+*   **Data**: Integration with **Kuvera / AMFI** datasets to map categories to top-performing Direct Growth funds.
+
+### v1.4: UX & Interactivity Polish
 *   **Feature**: Added **Interactive Alternative Scenarios**. Users can now click on "Conservative" or "Aggressive" cards to swap the entire recommendation logic dynamically.
 *   **UX**: Highlighted active strategies with a "selected" state (border + glow).
 *   **UX**: **Smart Date Defaults**. Start Date now defaults to today and resets automatically after adding a goal.

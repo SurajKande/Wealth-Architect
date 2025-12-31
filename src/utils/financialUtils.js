@@ -10,7 +10,11 @@ export const ASSET_CATEGORIES = {
         risk: 'LOW',
         minReturn: 5,
         maxReturn: 6,
-        schemeCode: '119598' // SBI Liquid Fund Direct Growth (Example)
+        schemeCode: '119598', // SBI Liquid Fund (Proxy for category)
+        recommendedFunds: [
+            { name: "SBI Liquid Fund Direct Growth", isin: "INF200K01UT4", schemeCode: "119598" },
+            { name: "ICICI Prudential Liquid Fund Direct Growth", isin: "INF109K01886", schemeCode: "120586" }
+        ]
     },
     SHORT_DEBT: {
         id: 'short_debt',
@@ -18,7 +22,11 @@ export const ASSET_CATEGORIES = {
         risk: 'LOW-MODERATE',
         minReturn: 6,
         maxReturn: 7,
-        schemeCode: '119800' // SBI Short Term Debt Fund
+        schemeCode: '119803', // SBI Short Term Debt
+        recommendedFunds: [
+            { name: "SBI Short Term Debt Fund Direct Growth", isin: "INF200K01VA1", schemeCode: "119803" },
+            { name: "HDFC Short Term Debt Fund Direct Growth", isin: "INF179K01BC7", schemeCode: "119053" }
+        ]
     },
     CONSERVATIVE_HYBRID: {
         id: 'cons_hybrid',
@@ -26,7 +34,11 @@ export const ASSET_CATEGORIES = {
         risk: 'MODERATE',
         minReturn: 7,
         maxReturn: 9,
-        schemeCode: '102885' // SBI Conservative Hybrid Fund
+        schemeCode: '119642', // SBI Conservative Hybrid
+        recommendedFunds: [
+            { name: "SBI Conservative Hybrid Fund Direct Growth", isin: "INF200K01VE3", schemeCode: "119642" },
+            { name: "Kotak Debt Hybrid Fund Direct Growth", isin: "INF174K01LS2", schemeCode: "119830" }
+        ]
     },
     AGGRESSIVE_HYBRID: {
         id: 'agg_hybrid',
@@ -34,7 +46,11 @@ export const ASSET_CATEGORIES = {
         risk: 'MODERATE-HIGH',
         minReturn: 10,
         maxReturn: 12,
-        schemeCode: '102861' // SBI Equity Hybrid Fund
+        schemeCode: '119363', // ICICI Pru Equity & Debt
+        recommendedFunds: [
+            { name: "ICICI Pru Equity & Debt Fund Direct Growth", isin: "INF109K01Y07", schemeCode: "119363" },
+            { name: "Quant Absolute Fund Direct Growth", isin: "INF966L01026", schemeCode: "120822" }
+        ]
     },
     LARGE_CAP: {
         id: 'large_cap',
@@ -42,7 +58,11 @@ export const ASSET_CATEGORIES = {
         risk: 'HIGH',
         minReturn: 12,
         maxReturn: 14,
-        schemeCode: '119770' // SBI Bluechip Fund
+        schemeCode: '118776', // Nippon India Large Cap
+        recommendedFunds: [
+            { name: "Nippon India Large Cap Fund Direct Growth", isin: "INF204K01884", schemeCode: "118776" },
+            { name: "HDFC Top 100 Fund Direct Growth", isin: "INF179KA1ER3", schemeCode: "119062" }
+        ]
     },
     FLEXI_CAP: {
         id: 'flexi_cap',
@@ -50,8 +70,20 @@ export const ASSET_CATEGORIES = {
         risk: 'VERY HIGH',
         minReturn: 14,
         maxReturn: 18,
-        schemeCode: '125497' // SBI Flexicap Fund
+        schemeCode: '122639', // Parag Parikh Flexi Cap
+        recommendedFunds: [
+            { name: "Parag Parikh Flexi Cap Fund Direct Growth", isin: "INF879O01027", schemeCode: "122639" },
+            { name: "UTI Nifty 50 Index Fund Direct Growth", isin: "INF789F01XA0", schemeCode: "120716" }
+        ]
     }
+};
+
+/**
+ * Returns specific fund recommendations for a given category ID
+ */
+export const getFundRecommendations = (categoryId) => {
+    const category = Object.values(ASSET_CATEGORIES).find(c => c.id === categoryId || c.name === categoryId);
+    return category ? category.recommendedFunds : [];
 };
 
 /**
