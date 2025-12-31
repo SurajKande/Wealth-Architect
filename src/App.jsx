@@ -89,26 +89,26 @@ function App() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                       <div className="bg-black/20 p-4 rounded-xl">
                         <div className="text-gray-400 text-xs mb-1">Target (Infl. Adj)</div>
-                        <div className="text-2xl font-bold text-white">₹ {(insight.inflAdjustedCost / 100000).toFixed(2)} L</div>
-                        <div className="text-xs text-gray-500 mt-1">Cost Today: ₹ {(goal.amountNeededToday / 100000).toFixed(2)} L</div>
+                        <div className="text-2xl font-bold text-white">{formatCurrency(insight.inflAdjustedCost)}</div>
+                        <div className="text-xs text-gray-500 mt-1">Cost Today: {formatCurrency(goal.amountNeededToday)}</div>
                       </div>
 
                       <div className="bg-black/20 p-4 rounded-xl">
                         <div className="text-gray-400 text-xs mb-1">Best Projected Corpus</div>
                         <div className={`text-2xl font-bold ${isAchievable ? 'text-blue-300' : 'text-amber-400'}`}>
-                          ₹ {(rec.projectedCorpus / 100000).toFixed(2)} L
+                          {formatCurrency(rec.projectedCorpus)}
                         </div>
                         <div className="text-xs text-gray-500 mt-1">@ {rec.returnUsed}% Return</div>
                       </div>
 
                       <div className={`bg-black/20 p-4 rounded-xl border relative overflow-hidden ${isAchievable ? 'border-emerald-500/30' : 'border-red-500/30'}`}>
                         <div className={`absolute inset-0 ${isAchievable ? 'bg-emerald-500/5' : 'bg-red-500/5'}`}></div>
-                        <div className="text-gray-400 text-xs mb-1 font-bold">REQUIRED MONTHLY SIP</div>
+                        <div className="text-gray-400 text-xs mb-1 font-bold">ADDITIONAL SIP NEEDED</div>
                         <div className={`text-3xl font-bold ${isAchievable ? 'text-emerald-400' : 'text-red-400'}`}>
-                          ₹ {Math.ceil(rec.requiredExtraSip).toLocaleString('en-IN')}
+                          {formatCurrency(Math.ceil(rec.requiredExtraSip))}
                         </div>
                         <div className="text-xs opacity-70 mt-1 text-gray-400">
-                          {isAchievable ? 'To achieve goal' : `Shortfall: ₹ ${Math.round(rec.shortfall).toLocaleString()}`}
+                          {isAchievable ? 'To achieve goal' : `Shortfall: ${formatCurrency(rec.shortfall)}`}
                         </div>
                       </div>
                     </div>
@@ -129,6 +129,9 @@ function App() {
                           <div className="flex-1 p-3 bg-black/20 rounded-lg border border-white/5">
                             <span className="block text-xs text-gray-400 mb-1">Suggested Category</span>
                             <strong className="text-white text-lg">{rec.category}</strong>
+                            <span className="block text-xs text-blue-400 mt-1">
+                              Expected Return: {rec.returnUsed}%
+                            </span>
                           </div>
                           <div className="flex-1 p-3 bg-black/20 rounded-lg border border-white/5">
                             <span className="block text-xs text-gray-400 mb-1">Risk Profile</span>
@@ -160,7 +163,7 @@ function App() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="flex justify-between text-xs text-gray-400 mb-1">
-                            <span>Monthly Inv (₹ {goal.monthlyInvestment.toLocaleString()})</span>
+                            <span>Planned Monthly Inv ({formatCurrency(goal.monthlyInvestment)})</span>
                             <span className="text-[10px] text-gray-500">Budget Tweak</span>
                           </label>
                           <input
