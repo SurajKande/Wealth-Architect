@@ -37,7 +37,12 @@ const GoalInput = ({ onAddGoal }) => {
 
         onAddGoal(newGoal);
         // Reset minimal fields
-        setGoal(prev => ({ ...prev, name: '', amountNeededToday: '' }));
+        setGoal(prev => ({
+            ...prev,
+            name: '',
+            amountNeededToday: '',
+            startDate: new Date().toISOString().split('T')[0] // Reset to today
+        }));
     };
 
     return (

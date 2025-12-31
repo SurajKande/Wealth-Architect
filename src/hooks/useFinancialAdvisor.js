@@ -136,7 +136,18 @@ export const useFinancialAdvisor = (goals) => {
                 { type: 'Conservative', ...scenarios.conservative },
                 { type: 'Balanced', ...scenarios.balanced },
                 { type: 'Aggressive', ...scenarios.aggressive }
-            ].filter(s => s.category); // Filter out if any category is missing
+            ].filter(s => s.category)
+                .map(s => ({
+                    type: s.type,
+                    category: s.category.name, // Flattened for UI consistency
+                    categoryId: s.category.id, // For selection matching
+                    risk: s.category.risk,
+                    returnUsed: s.rate.toFixed(2),
+                    projectedCorpus: s.projectedCorpus,
+                    shortfall: s.shortfall,
+                    requiredExtraSip: s.requiredSip,
+                    confidenceScore: s.confidence
+                }));
 
             // Construct Final Insight Object
             return {
@@ -152,6 +163,7 @@ export const useFinancialAdvisor = (goals) => {
                 // Primary Recommendation Details
                 primaryRecommendation: {
                     category: primaryRec.category.name,
+                    categoryId: primaryRec.category.id,
                     risk: primaryRec.category.risk,
                     returnUsed: primaryRec.rate.toFixed(2),
                     projectedCorpus: primaryRec.projectedCorpus,

@@ -6,6 +6,7 @@ import { TrendingUp, ShieldCheck, AlertTriangle, IndianRupee } from 'lucide-reac
 
 function App() {
   const [goals, setGoals] = useState([]);
+  const [activeScenarios, setActiveScenarios] = useState({}); // Stores selected scenario type for each goal
   const insights = useFinancialAdvisor(goals);
 
   const handleAddGoal = (goal) => {
@@ -14,6 +15,13 @@ function App() {
 
   const handleUpdateGoal = (id, field, value) => {
     setGoals(goals.map(g => g.id === id ? { ...g, [field]: Number(value) } : g));
+  };
+
+  const handleScenarioSelect = (goalId, scenarioType) => {
+    setActiveScenarios(prev => ({
+      ...prev,
+      [goalId]: prev[goalId] === scenarioType ? null : scenarioType // Toggle off if clicked again
+    }));
   };
 
   return (
@@ -65,7 +73,11 @@ function App() {
             ) : (
               insights.map((insight) => {
                 const goal = goals.find(g => g.id === insight.id);
-                const rec = insight.primaryRecommendation;
+                // logic: if user selected a scenario, look it up. else use primary.
+                const selectedType = activeScenarios[goal.id];
+                const selectedScenario = selectedType ? insight.alternativeScenarios.find(s => s.type === selectedType) : null;
+                const rec = selectedScenario || insight.primaryRecommendation;
+
                 const isAchievable = insight.status !== 'NOT_ACHIEVABLE';
 
                 return (
@@ -165,15 +177,23 @@ function App() {
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {insight.alternativeScenarios.map((scenario, index) => {
                           const extraSip = Math.ceil(scenario.requiredSip);
-                          const isBest = scenario.category.id === rec.category.id;
+                          // It is "best"/active if matches current rec
+                          const isActive = rec.categoryId === scenario.categoryId;
 
                           return (
-                            <div key={index} className={`p-4 rounded-xl border ${isBest ? 'bg-blue-500/10 border-blue-500/40 ring-1 ring-blue-500' : 'bg-black/20 border-white/5'}`}>
+                            <div
+                              key={index}
+                              onClick={() => handleScenarioSelect(goal.id, scenario.type)}
+                              className={`p-4 rounded-xl border cursor-pointer transition-all ${isActive
+                                  ? 'bg-white/10 border-white/30 backdrop-blur-sm shadow-xl scale-[1.02] ring-1 ring-white/20' // Selected Style: Transparent Gray + Scale
+                                  : 'bg-black/20 border-white/5 hover:bg-white/5 opacity-70 hover:opacity-100' // Inactive
+                                }`}
+                            >
                               <div className="flex justify-between items-start mb-2">
-                                <span className="text-xs font-bold text-gray-400">{scenario.type}</span>
-                                <span className="text-xs font-mono text-emerald-300">{scenario.rate.toFixed(1)}%</span>
+                                <span className={`text-xs font-bold ${isActive ? 'text-white' : 'text-gray-400'}`}>{scenario.type}</span>
+                                <span className="text-xs font-mono text-emerald-300">{scenario.returnUsed}%</span>
                               </div>
-                              <div className="text-sm font-bold text-white mb-1 truncate">{scenario.category.name}</div>
+                              <div className="text-sm font-bold text-white mb-1 truncate">{scenario.category}</div>
 
                               <div className="mt-3 pt-3 border-t border-white/5">
                                 <div className="text-[10px] text-gray-500 uppercase">Extra SIP Needed</div>
@@ -197,7 +217,7 @@ function App() {
                             <span className="text-[10px] text-gray-500">Budget Tweak</span>
                           </label>
                           <input
-                            type="range" min="0" max="100000" step="1000"
+                            type="range" min="0" max="100000" step="1"
                             value={goal.monthlyInvestment}
                             onChange={(e) => handleUpdateGoal(goal.id, 'monthlyInvestment', e.target.value)}
                             className="w-full accent-blue-500 h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"
