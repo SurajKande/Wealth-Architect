@@ -1,12 +1,36 @@
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
-    calculateMonths,
-    calculateInflationAdjustedAmount,
-    calculateFutureValue,
-    calculateSIP
-} from '../utils/formulas';
+    ASSET_CATEGORIES,
+    calculateFV,
+    calculateSIPFV,
+    calculateRequiredSIP,
+    inflationAdjust,
+    getMonthsDifference,
+    calculateConfidenceScore,
+    fetchHistoricalCAGR
+} from '../utils/financialUtils';
 
 export const useFinancialAdvisor = (goals) => {
+    // 1. State for dynamic market rates (fetched from API)
+    const [marketRates, setMarketRates] = useState({});
+
+    // 2. Fetch Historical Data on Mount
+    useEffect(() => {
+        const fetchRates = async () => {
+            const newRates = {};
+            const promises = Object.values(ASSET_CATEGORIES).map(async (category) => {
+                const cagr = await fetchHistoricalCAGR(category.schemeCode);
+                if (cagr !== null) {
+                    newRates[category.id] = cagr;
+                }
+            });
+            await Promise.all(promises);
+            setMarketRates(newRates);
+        };
+        fetchRates();
+    }, []);
+
+    // 3. Generate Insights
     const insights = useMemo(() => {
         return goals.map(goal => {
             const {
@@ -18,82 +42,117 @@ export const useFinancialAdvisor = (goals) => {
                 inflation,
                 currentCorpus,
                 monthlyInvestment,
-                expectedReturn
             } = goal;
 
-            const months = calculateMonths(startDate, targetDate);
+            // Basic Calculations
+            const months = getMonthsDifference(startDate, targetDate);
             const years = months / 12;
+            const inflAdjustedCost = inflationAdjust(amountNeededToday, inflation, years);
 
-            // 1. Calculate Inflation Adjusted Target
-            const inflAdjustedCost = calculateInflationAdjustedAmount(amountNeededToday, inflation, years);
+            // Feasibility & Recommendation Logic
+            const recommendations = [];
+            let isAchievable = false;
+            let bestCorpus = 0;
+            const warnings = [];
 
-            // 2. Calculate Future Value of Current Corpus
-            const corpusFV = calculateFutureValue(currentCorpus, expectedReturn, years);
+            // Analyze each Asset Category
+            Object.values(ASSET_CATEGORIES).forEach(category => {
+                // Determine effective return rate
+                // Use API rate if available and sensible, else use avg of hardcoded range
+                // Cap the API rate to category max to avoid unrealistic projections
+                let rate = marketRates[category.id] || (category.minReturn + category.maxReturn) / 2;
+                rate = Math.min(rate, category.maxReturn);
 
-            // 3. Calculate "Already Covered" by existing Monthly Investment
-            // FV of existing SIP
-            const monthlyRate = expectedReturn / 12 / 100;
-            let existingSipFV = 0;
-            if (months > 0 && monthlyRate > 0) {
-                existingSipFV = monthlyInvestment * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate) * (1 + monthlyRate);
-            } else if (months > 0) {
-                existingSipFV = monthlyInvestment * months;
+                // Calculate Projected Corpus for this category
+                const corpusFV = calculateFV(rate, years, currentCorpus);
+                const sipFV = calculateSIPFV(rate, months, monthlyInvestment);
+                const totalProjected = corpusFV + sipFV;
+
+                if (totalProjected > bestCorpus) {
+                    bestCorpus = totalProjected;
+                }
+
+                // Check gap
+                const shortfall = inflAdjustedCost - totalProjected;
+                const gapPercentage = Math.max(0, shortfall / inflAdjustedCost);
+
+                // Feasibility Check for this specific category
+                // For "Achievable", we allow a tiny margin of error or exact match
+                if (shortfall <= 0) {
+                    isAchievable = true;
+                }
+
+                // Calculate required SIP if not meeting
+                const requiredSip = calculateRequiredSIP(Math.max(0, shortfall), rate, months);
+
+                recommendations.push({
+                    category,
+                    rate,
+                    projectedCorpus: totalProjected,
+                    shortfall,
+                    requiredSip,
+                    gapPercentage,
+                    confidence: calculateConfidenceScore(years, category.risk, gapPercentage)
+                });
+            });
+
+            // Sort recommendations by Confidence Score first, then Shortfall (ascending)
+            recommendations.sort((a, b) => b.confidence - a.confidence);
+
+            // Determine Status
+            let status = "Achievable";
+            if (!isAchievable) {
+                // If even the best category (highest return) fails
+                status = "NOT_ACHIEVABLE";
+                warnings.push("Target corpus not achievable with current inputs.");
             }
 
-            const totalProjectedWealth = corpusFV + existingSipFV;
-            const shortfall = inflAdjustedCost - totalProjectedWealth;
+            // Select Recommendations
+            // Primary: Best Confidence Score that is Achievable (or best available if none)
+            let primaryRec = recommendations.find(r => r.shortfall <= 0);
 
-            // 4. Calculate Required NEW SIP for the shortfall
-            let requiredSip = 0;
-            if (shortfall > 0) {
-                requiredSip = calculateSIP(shortfall, expectedReturn, months);
+            // If none are fully achievable with current inputs, pick the one that gets closest (smallest shortfall)
+            if (!primaryRec) {
+                // Sort by failure gap
+                const bestEffort = [...recommendations].sort((a, b) => a.shortfall - b.shortfall)[0];
+                primaryRec = bestEffort;
             }
 
-            // 5. Advisor Suggestions
-            let suggestion = "";
-            let assetClass = "";
-            let riskProfile = "";
-
-            if (years < 3) {
-                assetClass = "Debt / Liquid Funds";
-                riskProfile = "Low";
-                suggestion = "Time is too short for equity. Stick to safer Debt instruments.";
-            } else if (years < 5) {
-                assetClass = "Hybrid / Balanced Advantage";
-                riskProfile = "Moderate";
-                suggestion = "Market volatility can impact short-term goals. Hybrid funds offer balance.";
-            } else if (years < 8) {
-                assetClass = "Large Cap / Flexi Cap Equity";
-                riskProfile = "High";
-                suggestion = "Good horizon for Equity. Stick to stable Large/Flexi cap funds.";
-            } else {
-                assetClass = "Mid / Small Cap Equity";
-                riskProfile = "Very High";
-                suggestion = "Long term allows you to ride out volatility. maximize returns with Mid/Small caps.";
+            // Logic for short term goals (< 1 year) overrides return optimization
+            if (months < 12) {
+                const liquidRec = recommendations.find(r => r.category.id === 'liquid');
+                if (liquidRec) primaryRec = liquidRec;
+                warnings.push("Short duration. Capital protection prioritized.");
             }
 
-            const status = shortfall <= 0 ? "On Track" : "Action Needed";
-
-            const actionInsight = shortfall <= 0
-                ? `Great job! Your current investments should cover this goal.`
-                : `Start an additional SIP of ₹${Math.ceil(requiredSip).toLocaleString('en-IN')} in ${assetClass}.`;
-
+            // Construct Final Insight Object
             return {
                 id,
-                months,
+                name,
+                targetDate,
                 years,
+                status, // achiveable / not_achievable
                 inflAdjustedCost,
-                corpusFV,
-                shortfall,
-                requiredSip,
-                assetClass,
-                riskProfile,
-                suggestion,
-                status,
-                actionInsight
+                currentCorpus,
+                monthlyInvestment,
+
+                // Primary Recommendation Details
+                primaryRecommendation: {
+                    category: primaryRec.category.name,
+                    risk: primaryRec.category.risk,
+                    returnUsed: primaryRec.rate.toFixed(2),
+                    projectedCorpus: primaryRec.projectedCorpus,
+                    shortfall: primaryRec.shortfall,
+                    requiredExtraSip: primaryRec.requiredSip,
+                    confidenceScore: primaryRec.confidence
+                },
+
+                // For UI Display
+                suggestions: warnings,
+                bestCorpus: bestCorpus, // To show "Best Possible"
             };
         });
-    }, [goals]);
+    }, [goals, marketRates]);
 
     return insights;
 };
