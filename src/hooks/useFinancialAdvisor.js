@@ -125,6 +125,19 @@ export const useFinancialAdvisor = (goals) => {
                 warnings.push("Short duration. Capital protection prioritized.");
             }
 
+            // Select Specific Scenarios for "What-If" Analysis
+            const scenarios = {
+                conservative: recommendations.find(r => r.category.id === 'liquid'),
+                balanced: recommendations.find(r => r.category.id === 'agg_hybrid'),
+                aggressive: recommendations.find(r => r.category.id === 'flexi_cap')
+            };
+
+            const alternativeScenarios = [
+                { type: 'Conservative', ...scenarios.conservative },
+                { type: 'Balanced', ...scenarios.balanced },
+                { type: 'Aggressive', ...scenarios.aggressive }
+            ].filter(s => s.category); // Filter out if any category is missing
+
             // Construct Final Insight Object
             return {
                 id,
@@ -146,6 +159,8 @@ export const useFinancialAdvisor = (goals) => {
                     requiredExtraSip: primaryRec.requiredSip,
                     confidenceScore: primaryRec.confidence
                 },
+
+                alternativeScenarios, // New: Exposed for UI
 
                 // For UI Display
                 suggestions: warnings,

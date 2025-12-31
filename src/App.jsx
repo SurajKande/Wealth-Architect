@@ -157,6 +157,36 @@ function App() {
                       </div>
                     </div>
 
+                    {/* Alternative Strategies */}
+                    <div className="mb-6">
+                      <h4 className="flex items-center gap-2 text-gray-400 font-bold text-xs uppercase mb-3">
+                        <TrendingUp size={14} /> Alternative Strategies
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {insight.alternativeScenarios.map((scenario, index) => {
+                          const extraSip = Math.ceil(scenario.requiredSip);
+                          const isBest = scenario.category.id === rec.category.id;
+
+                          return (
+                            <div key={index} className={`p-4 rounded-xl border ${isBest ? 'bg-blue-500/10 border-blue-500/40 ring-1 ring-blue-500' : 'bg-black/20 border-white/5'}`}>
+                              <div className="flex justify-between items-start mb-2">
+                                <span className="text-xs font-bold text-gray-400">{scenario.type}</span>
+                                <span className="text-xs font-mono text-emerald-300">{scenario.rate.toFixed(1)}%</span>
+                              </div>
+                              <div className="text-sm font-bold text-white mb-1 truncate">{scenario.category.name}</div>
+
+                              <div className="mt-3 pt-3 border-t border-white/5">
+                                <div className="text-[10px] text-gray-500 uppercase">Extra SIP Needed</div>
+                                <div className={`text-lg font-bold ${extraSip > 0 ? 'text-white' : 'text-emerald-400'}`}>
+                                  {extraSip > 0 ? formatCurrency(extraSip) : 'None'}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
                     {/* Tweaks Section */}
                     <div className="border-t border-white/10 pt-4">
                       <div className="text-xs font-bold text-gray-500 uppercase mb-3 text-center md:text-left">Interactive Tweaks</div>
@@ -184,8 +214,8 @@ function App() {
             )}
           </div>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }
 
