@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import GoalInput from './components/GoalInput';
 import { useFinancialAdvisor } from './hooks/useFinancialAdvisor';
 import { formatCurrency } from './utils/financialUtils';
+import WealthGrowthChart from './components/WealthGrowthChart';
 import { TrendingUp, ShieldCheck, AlertTriangle, IndianRupee } from 'lucide-react';
 
 function App() {
@@ -235,6 +236,16 @@ function App() {
                       </div>
                     </div>
 
+                    {/* Wealth Growth Chart (v2.0) */}
+                    <div className="bg-white/5 border border-white/10 p-4 rounded-xl mb-6">
+                      <div className="flex justify-between items-center mb-4">
+                        <h4 className="flex items-center gap-2 text-emerald-400 font-bold text-xs uppercase">
+                          <TrendingUp size={14} /> Wealth Growth Projection
+                        </h4>
+                      </div>
+                      <WealthGrowthChart data={rec.wealthCurve} themeColor={rec.risk === 'HIGH' || rec.risk === 'VERY HIGH' ? '#ef4444' : '#10b981'} />
+                    </div>
+
                     {/* Tweaks Section */}
                     <div className="border-t border-white/10 pt-4">
                       <div className="text-xs font-bold text-gray-500 uppercase mb-3 text-center md:text-left">Interactive Tweaks</div>
@@ -251,8 +262,18 @@ function App() {
                             className="w-full accent-blue-500 h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"
                           />
                         </div>
-                        <div className="text-xs text-gray-500 flex items-center">
-                          Note: Return slider removed. Returns are now determined by the Recommendation Engine based on asset class.
+                        {/* Step-Up Slider (Active) */}
+                        <div>
+                          <label className="flex justify-between text-xs text-gray-400 mb-1">
+                            <span>Annual Step-Up ({goal.stepUpRate || 0}%)</span>
+                            <span className="text-[10px] text-gray-500 font-bold text-emerald-400">Boost Wealth</span>
+                          </label>
+                          <input
+                            type="range" min="0" max="20" step="5"
+                            value={goal.stepUpRate || 0}
+                            onChange={(e) => handleUpdateGoal(goal.id, 'stepUpRate', e.target.value)}
+                            className="w-full accent-emerald-500 h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                          />
                         </div>
                       </div>
                     </div>
@@ -265,7 +286,7 @@ function App() {
       </div>
 
       <div className="mt-12 text-center text-xs text-gray-600 pb-4">
-        v1.4
+        v2.0
       </div>
     </div >
   );

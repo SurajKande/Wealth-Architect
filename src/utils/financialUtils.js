@@ -99,14 +99,93 @@ export const calculateFV = (rate, nper, pv) => {
 
 /**
  * Calculates the Future Value of a SIP (Monthly Investment)
+ * Supports Annual Step-Up if stepUpRate > 0
  * @param {number} rate - Annual interest rate (in %)
  * @param {number} months - Number of months
  * @param {number} pmt - Monthly SIP amount
+ * @param {number} stepUpRate - Annual step-up increment (in %)
  */
-export const calculateSIPFV = (rate, months, pmt) => {
-    const r = rate / 100 / 12; // Monthly rate
-    if (r === 0) return pmt * months;
-    return pmt * ((Math.pow(1 + r, months) - 1) / r) * (1 + r);
+export const calculateSIPFV = (rate, months, pmt, stepUpRate = 0) => {
+    let r = rate / 100 / 12; // Monthly return rate
+
+    // If no step-up, use the faster formula
+    if (stepUpRate === 0) {
+        if (r === 0) return pmt * months;
+        return pmt * ((Math.pow(1 + r, months) - 1) / r) * (1 + r);
+    }
+
+    // Iterative calculation for Step-Up SIP
+    // Because mixing Monthly Compounding with Annual Step-Up is complex for a single formula
+    let totalValue = 0;
+    let currentPmt = pmt;
+    let totalInvested = 0;
+
+    for (let i = 1; i <= months; i++) {
+        // Add investment
+        totalValue += currentPmt;
+        totalInvested += currentPmt;
+
+        // Apply monthly growth
+        totalValue *= (1 + r);
+
+        // Increase SIP amount every 12 months
+        if (i % 12 === 0) {
+            currentPmt = currentPmt * (1 + stepUpRate / 100);
+        }
+    }
+
+    return totalValue;
+};
+
+/**
+ * Calculates the Future Value "Schedule" (Year by Year) for building Charts
+ * @returns {Array} Array of { year, invested, value }
+ */
+export const calculateWealthGrowthCurve = (rate, months, currentCorpus, monthlyPmt, stepUpRate = 0) => {
+    let r = rate / 100 / 12;
+    let totalValue = currentCorpus;
+    let totalInvested = currentCorpus;
+    let currentPmt = monthlyPmt;
+    const dataPoints = [];
+
+    // Start point (Year 0)
+    dataPoints.push({
+        year: 0,
+        invested: Math.round(totalInvested),
+        value: Math.round(totalValue)
+    });
+
+    for (let i = 1; i <= months; i++) {
+        // Add monthly investment
+        totalValue += currentPmt;
+        totalInvested += currentPmt;
+
+        // Apply monthly return
+        totalValue *= (1 + r);
+
+        // Annual Step-Up Logic
+        if (i % 12 === 0) {
+            currentPmt = currentPmt * (1 + stepUpRate / 100);
+
+            // Record Data Point at the end of each year
+            dataPoints.push({
+                year: i / 12,
+                invested: Math.round(totalInvested),
+                value: Math.round(totalValue)
+            });
+        }
+    }
+
+    // Handle remaining months if not a full year
+    if (months % 12 !== 0) {
+        dataPoints.push({
+            year: Number((months / 12).toFixed(1)),
+            invested: Math.round(totalInvested),
+            value: Math.round(totalValue)
+        });
+    }
+
+    return dataPoints;
 };
 
 /**

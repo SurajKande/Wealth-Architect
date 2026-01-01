@@ -34,6 +34,8 @@ The primary objective of Wealth Architect is to give users clarity on their fina
 ## 📜 Version History & Changelog
 
 ### v2.0: The Wealth Platform (Current)
+*   **Feature**: **Wealth Growth Maps**. New interactive visualizations (using `recharts`) plot your projected wealth curve against your total invested amount over time.
+*   **Feature**: **Step-Up SIP Engine**. Users can now simulate an annual percentage increase in their investments (Step-Up SIP), powered by a new iterative compounding algorithm.
 *   **Feature**: **Specific Fund Recommendations**. The engine now suggests real-world funds (e.g., *Parag Parikh Flexi Cap*, *SBI Liquid Fund*) with direct ISIN tracking links, instead of just generic categories.
 *   **Data**: Integration with **Kuvera / AMFI** datasets to map categories to top-performing Direct Growth funds.
 

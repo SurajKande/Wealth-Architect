@@ -7,7 +7,8 @@ import {
     inflationAdjust,
     getMonthsDifference,
     calculateConfidenceScore,
-    fetchHistoricalCAGR
+    fetchHistoricalCAGR,
+    calculateWealthGrowthCurve
 } from '../utils/financialUtils';
 
 export const useFinancialAdvisor = (goals) => {
@@ -42,6 +43,7 @@ export const useFinancialAdvisor = (goals) => {
                 inflation,
                 currentCorpus,
                 monthlyInvestment,
+                stepUpRate = 0 // Default to 0 if not set
             } = goal;
 
             // Basic Calculations
@@ -65,7 +67,7 @@ export const useFinancialAdvisor = (goals) => {
 
                 // Calculate Projected Corpus for this category
                 const corpusFV = calculateFV(rate, years, currentCorpus);
-                const sipFV = calculateSIPFV(rate, months, monthlyInvestment);
+                const sipFV = calculateSIPFV(rate, months, monthlyInvestment, stepUpRate); // Use Step-Up
                 const totalProjected = corpusFV + sipFV;
 
                 if (totalProjected > bestCorpus) {
@@ -83,6 +85,8 @@ export const useFinancialAdvisor = (goals) => {
                 }
 
                 // Calculate required SIP if not meeting
+                // Note: Required SIP calc currently implies fixed SIP. Complex to solve for required Step-Up SIP iteratively efficiently here.
+                // Keeping it as Fixed SIP required for simplicity or updating later.
                 const requiredSip = calculateRequiredSIP(Math.max(0, shortfall), rate, months);
 
                 recommendations.push({
@@ -147,8 +151,12 @@ export const useFinancialAdvisor = (goals) => {
                     shortfall: s.shortfall,
                     requiredExtraSip: s.requiredSip,
                     confidenceScore: s.confidence,
-                    recommendedFunds: s.category.recommendedFunds || [] // Pass specific funds
+                    recommendedFunds: s.category.recommendedFunds || [], // Pass specific funds
+                    wealthCurve: calculateWealthGrowthCurve(s.rate, months, currentCorpus, monthlyInvestment, stepUpRate)
                 }));
+
+            // Calculate Primary Curve
+            const primaryCurve = calculateWealthGrowthCurve(primaryRec.rate, months, currentCorpus, monthlyInvestment, stepUpRate);
 
             // Construct Final Insight Object
             return {
@@ -171,7 +179,8 @@ export const useFinancialAdvisor = (goals) => {
                     shortfall: primaryRec.shortfall,
                     requiredExtraSip: primaryRec.requiredSip,
                     confidenceScore: primaryRec.confidence,
-                    recommendedFunds: primaryRec.category.recommendedFunds || [] // Pass specific funds
+                    recommendedFunds: primaryRec.category.recommendedFunds || [], // Pass specific funds
+                    wealthCurve: primaryCurve
                 },
 
                 alternativeScenarios, // New: Exposed for UI
