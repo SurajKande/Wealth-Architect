@@ -205,7 +205,7 @@ function App() {
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {insight.alternativeScenarios.map((scenario, index) => {
-                          const extraSip = Math.ceil(scenario.requiredSip);
+                          const extraSip = Math.ceil(scenario.requiredExtraSip);
                           // It is "best"/active if matches current rec
                           const isActive = rec.categoryId === scenario.categoryId;
 
