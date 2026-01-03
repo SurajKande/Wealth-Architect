@@ -2,6 +2,8 @@
 
 **Wealth Architect** is a personalized, AI-driven financial goal planner designed specifically for the **Indian market**. It helps users bridge the gap between their financial dreams and reality by providing mathematically rigorous, inflation-adjusted investment strategies.
 
+> 📘 **See the [Detailed Walkthrough](Walkthrough.md)** for a step-by-step verification of all features.
+
 ---
 
 ## 🎯 Project Goal
